@@ -181,6 +181,8 @@
       'Ready for Transfer': { label: 'ได้คิวแล้ว (รอส่งตัว)', color: 'bg-green-100 text-green-700 border-green-300' },
       'Discharged To Agency': { label: 'จำหน่ายออกจากรพ. ฝากหน่วยงานอื่น', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
       'Discharged': { label: 'จำหน่ายสำเร็จ', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+      'Self Discharged': { label: 'กลับบ้านเอง', color: 'bg-teal-100 text-teal-700 border-teal-300' },
+      'Deceased': { label: 'เสียชีวิต', color: 'bg-slate-200 text-slate-700 border-slate-400' },
     };
 
     // สถานะย่อยของการติดตามผู้ป่วยที่ "จำหน่ายออกจากรพ. ฝากหน่วยงานอื่น" — ใช้คู่กับ dischargeAgency / dischargeDate
@@ -191,7 +193,7 @@
     };
 
     // สถานะที่ถือว่า "ปิดเคส" แล้ว (ไม่นับรวมในสถิติเตียง/เคสที่กำลังดำเนินการของแดชบอร์ด) เหมือนสถานะจำหน่ายสำเร็จ
-    const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency'];
+    const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency', 'Self Discharged', 'Deceased'];
 
     // รายการอ้างอิง ICD10 เบื้องต้นสำหรับผู้ป่วยจำหน่ายยาก (ไม่ครบทุกรหัส เป็นเพียงตัวช่วยกรอกให้สม่ำเสมอ — ยังพิมพ์ค่าอื่นได้อิสระ)
     const ICD10_SUGGESTIONS = [
@@ -510,7 +512,7 @@
 
     // 4. Add Patient Modal
     const AddPatientModal = ({ isOpen, onClose, onSave, settings }) => {
-      const blankForm = { hn: '', an: '', name: '', icd10: '', ward: '', medReadyDate: '', reason: '', agency: '-', details: '', letterNo: '', letterDate: '', letterAgency: '', letterStatus: '' };
+      const blankForm = { hn: '', an: '', name: '', icd10: '', ward: '', medReadyDate: '', reason: '', reasonOther: '', agency: '-', details: '', letterNo: '', letterDate: '', letterAgency: '', letterStatus: '' };
       const [formData, setFormData] = useState(blankForm);
       const [error, setError] = useState('');
       const [isSaving, setIsSaving] = useState(false);
@@ -523,7 +525,11 @@
         e.preventDefault();
         setIsSaving(true);
         setError('');
-        const res = await onSave({ ...formData, status: 'New Case', reason: formData.reason || 'รอดำเนินการ', letterNo: formData.letterNo || '-', letterDate: formData.letterDate || '-', letterAgency: formData.letterAgency || '-', letterStatus: formData.letterStatus || '-' });
+        const finalReason = formData.reason === 'อื่นๆ' && formData.reasonOther.trim()
+          ? `อื่นๆ: ${formData.reasonOther.trim()}`
+          : (formData.reason || 'รอดำเนินการ');
+        const { reasonOther, ...submitData } = formData;
+        const res = await onSave({ ...submitData, status: 'New Case', reason: finalReason, letterNo: formData.letterNo || '-', letterDate: formData.letterDate || '-', letterAgency: formData.letterAgency || '-', letterStatus: formData.letterStatus || '-' });
         setIsSaving(false);
         if (res && res.success === false) { setError(res.message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'); return; }
         setFormData(blankForm);
@@ -576,6 +582,9 @@
                         <option value="รอปรับปรุงบ้าน/อุปกรณ์การแพทย์">รอปรับปรุงบ้าน/อุปกรณ์การแพทย์</option>
                         <option value="อื่นๆ">อื่นๆ</option>
                       </select>
+                      {formData.reason === 'อื่นๆ' && (
+                        <input type="text" required name="reasonOther" value={formData.reasonOther} onChange={handleChange} placeholder="ระบุสาเหตุเพิ่มเติม..." className="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm mt-2" />
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">หน่วยงานปลายทางเป้าหมาย (ถ้ามี)</label>
