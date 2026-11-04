@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D-Discharge | มุมมองภาพรวมสำหรับผู้บริหาร/แพทย์</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/C5sD85wd/Logo-sw69.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.22.20/babel.min.js"></script>
+
+  <style>
+    body { font-family: 'Sarabun', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+
+  <script>
+    // หมายเหตุ: หน้านี้ตั้งใจเปิดให้ฝังใน iframe ได้ (เช่นบน GitHub Pages) จึงแสดงข้อความ error
+    // แบบสุภาพ ไม่โชว์ stack trace เต็มให้ผู้ใช้ทั่วไปเห็นตรงๆ
+    window.onerror = function(message, source, lineno, colno, error) {
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F8FAFC;font-family:\'Sarabun\',sans-serif;padding:24px;">' +
+          '<div style="max-width:480px;width:100%;background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 30px rgba(15,23,42,0.08);">' +
+            '<div style="width:56px;height:56px;border-radius:9999px;background:#FEF2F2;color:#DC2626;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;">⚠️</div>' +
+            '<h1 style="color:#0F172A;font-size:19px;font-weight:700;margin-bottom:8px;">ขออภัย ระบบเกิดข้อผิดพลาด</h1>' +
+            '<p style="color:#64748B;font-size:14px;margin-bottom:20px;">กรุณาลองโหลดหน้าเว็บใหม่อีกครั้ง หากยังพบปัญหา กรุณาแจ้งผู้ดูแลระบบ</p>' +
+            '<button onclick="window.location.reload()" style="padding:10px 24px;background:#2563EB;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:500;font-family:inherit;font-size:14px;">รีโหลดหน้าเว็บ</button>' +
+            '<details style="margin-top:20px;text-align:left;">' +
+              '<summary style="cursor:pointer;font-size:12px;color:#94A3B8;">รายละเอียดทางเทคนิค</summary>' +
+              '<pre style="margin-top:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px;font-size:11px;color:#475569;overflow:auto;max-height:200px;white-space:pre-wrap;">' + message + '\nline ' + lineno + ':' + colno + '\n' + (error ? error.stack : '') + '</pre>' +
+            '</details>' +
+          '</div>' +
+        '</div>';
+      return true;
+    };
+  </script>
+</head>
+<body class="font-sans antialiased text-gray-900 bg-gray-50 overflow-x-hidden">
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react,env" data-type="text/javascript">
+    const { useState, useEffect, useMemo, Component } = React;
+
+    class ErrorBoundary extends Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null, errorInfo: null };
+      }
+      static getDerivedStateFromError(error) { return { hasError: true, error }; }
+      componentDidCatch(error, errorInfo) {
+        console.error("React Error:", error, errorInfo);
+        this.setState({ errorInfo });
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <h1 className="text-xl font-bold text-gray-800 mb-2">ขออภัย เกิดข้อผิดพลาดในการแสดงผล</h1>
+              <p className="text-sm text-gray-500 mb-4 max-w-sm">กรุณาลองโหลดหน้าเว็บใหม่อีกครั้ง หากยังพบปัญหาให้แจ้งผู้ดูแลระบบ</p>
+              <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors mb-4">โหลดหน้าเว็บใหม่</button>
+              <details className="text-left w-full max-w-lg">
+                <summary className="cursor-pointer text-xs text-gray-400">รายละเอียดทางเทคนิค</summary>
+                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-left w-full overflow-auto text-xs text-gray-600 font-mono mt-2 max-h-48">
+                  <p className="font-bold text-red-600 mb-2">{this.state.error && this.state.error.toString()}</p>
+                  <pre className="text-xs text-gray-500 whitespace-pre-wrap">{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
+                </div>
+              </details>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    // --- API Client (เหมือนกับหน้าหลัก Index.html ทุกประการ — เรียก Apps Script Web App ตัวเดียวกัน) ---
+    // *** สำคัญ: แก้ URL ด้านล่างให้ตรงกับ Web App URL เดียวกันกับที่ใช้ใน Index.html เสมอ ***
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz2lijSaB-MEKSvJtR_qIKlx9kyEPjK14M6VB5HdzEhl1NxkZzZ4exuCBMKOpEJyibVXg/exec';
+
+    async function apiGet(action, params = {}) {
+      const qs = new URLSearchParams({ action, ...params }).toString();
+      let res;
+      try {
+        res = await fetch(`${API_URL}?${qs}`, { method: 'GET' });
+      } catch (err) {
+        throw new Error('NETWORK_ERROR');
+      }
+      if (!res.ok) throw new Error('NETWORK_ERROR');
+      try {
+        return await res.json();
+      } catch (err) {
+        throw new Error('INVALID_RESPONSE');
+      }
+    }
+
+    async function apiPost(action, payload = {}) {
+      let res;
+      try {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, ...payload })
+        });
+      } catch (err) {
+        throw new Error('NETWORK_ERROR');
+      }
+      if (!res.ok) throw new Error('NETWORK_ERROR');
+      try {
+        return await res.json();
+      } catch (err) {
+        throw new Error('INVALID_RESPONSE');
+      }
+    }
+
+    // --- Icons ---
+    const Icon = ({ children, className }) => <svg className={className || "w-5 h-5"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>;
+    const LayoutDashboard = (p) => <Icon {...p}><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></Icon>;
+    const Users = (p) => <Icon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>;
+    const Building2 = (p) => <Icon {...p}><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></Icon>;
+    const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Icon>;
+    const AlertCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
+    const Clock = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Icon>;
+    const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+    const Download = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>;
+    const Mail = (p) => <Icon {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></Icon>;
+    const FileSpreadsheet = (p) => <Icon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></Icon>;
+    const Lock = (p) => <Icon {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
+    const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+    const HistoryIcon = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></Icon>;
+    const Stethoscope = (p) => <Icon {...p}><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></Icon>;
+    const Eye = (p) => <Icon {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></Icon>;
+
+    // --- Helpers (ต้องตรงกับ Index.html ทุกประการ เพื่อแสดงผลข้อมูลชุดเดียวกันได้ถูกต้อง) ---
+    const LOGO_URL = 'https://i.ibb.co/C5sD85wd/Logo-sw69.png';
+
+    const statusConfig = {
+      'New Case': { label: 'เคสใหม่ (รอประเมิน)', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+      'Assessment': { label: 'กำลังประเมิน/ค้นหาญาติ', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+      'Document Preparation': { label: 'เตรียมเอกสาร/ทำบัตร', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+      'Letter Sent': { label: 'ส่งหนังสือราชการแล้ว', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+      'Awaiting Agency': { label: 'รอคิวสถานสงเคราะห์', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+      'Ready for Transfer': { label: 'ได้คิวแล้ว (รอส่งตัว)', color: 'bg-green-100 text-green-700 border-green-300' },
+      'Discharged To Agency': { label: 'จำหน่ายออกจากรพ. ฝากหน่วยงานอื่น', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
+      'Discharged': { label: 'จำหน่ายสำเร็จ', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+      'Self Discharged': { label: 'กลับบ้านเอง', color: 'bg-teal-100 text-teal-700 border-teal-300' },
+      'Deceased': { label: 'เสียชีวิต', color: 'bg-slate-200 text-slate-700 border-slate-400' },
+    };
+
+    const dischargeFinalStatusConfig = {
+      'pending': { label: 'รอส่งตัวจริงไปสถานสงเคราะห์', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+      'confirmed': { label: 'ส่งตัวจริงสำเร็จแล้ว (ยืนยันรับแล้ว)', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+      'rejected': { label: 'ส่งตัวไม่สำเร็จ / ถูกปฏิเสธ', color: 'bg-red-100 text-red-700 border-red-300' },
+    };
+
+    const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency', 'Self Discharged', 'Deceased'];
+
+    const calculateExtraDays = (medReadyDateStr) => {
+      if (!medReadyDateStr) return 0;
+      const medDate = new Date(medReadyDateStr);
+      if (isNaN(medDate.getTime())) return 0;
+      const diffTime = new Date().getTime() - medDate.getTime();
+      if (diffTime <= 0) return 0;
+      return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    const getFiscalYear = (dateStr) => {
+      if (!dateStr) return null;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return null;
+      let fy = d.getFullYear() + 543;
+      if (d.getMonth() >= 9) fy += 1;
+      return fy.toString();
+    };
+
+    const formatDateTime = (isoString) => {
+      if(!isoString) return '-';
+      const d = new Date(isoString);
+      if(isNaN(d.getTime())) return '-';
+      return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' น.';
+    };
+
+    const StatusBadge = ({ status }) => {
+      const config = statusConfig[status] || { label: status || 'Unknown', color: 'bg-gray-100 text-gray-700 border-gray-300' };
+      return <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${config.color} whitespace-nowrap`}>{config.label}</span>;
+    };
+
+    // --- Toasts ---
+    const Toast = ({ toast, onDismiss }) => {
+      const styles = { success: 'bg-emerald-600', error: 'bg-red-600', info: 'bg-slate-800' };
+      return (
+        <div className={`${styles[toast.type] || styles.info} text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between gap-3 min-w-[260px] max-w-sm animate-fade-in`}>
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button onClick={() => onDismiss(toast.id)} className="text-white/70 hover:text-white flex-shrink-0"><X className="w-4 h-4"/></button>
+        </div>
+      );
+    };
+    const ToastContainer = ({ toasts, onDismiss }) => (
+      <div className="fixed top-4 right-4 z-[100] space-y-2 w-full max-w-sm px-4 sm:px-0">
+        {toasts.map(t => <Toast key={t.id} toast={t} onDismiss={onDismiss} />)}
+      </div>
+    );
+
+    // --- MiniBarChart + Dashboard (เหมือนกับ Index.html ทุกประการ) ---
+    const MiniBarChart = ({ data }) => {
+      const max = Math.max(1, ...data.map(d => d.count));
+      const w = 560, h = 170, gap = 18;
+      const barWidth = (w - gap * (data.length + 1)) / data.length;
+      return (
+        <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-40">
+          {data.map((d, i) => {
+            const barH = max > 0 ? (d.count / max) * (h - 40) : 0;
+            const x = gap + i * (barWidth + gap);
+            const y = h - 26 - barH;
+            return (
+              <g key={d.key}>
+                <rect x={x} y={h - 26} width={barWidth} height={Math.max(barH, 2)} rx="5" className="fill-blue-500" style={{ transform: `translateY(${-barH}px)` }} />
+                <text x={x + barWidth / 2} y={Math.max(y - 6, 12)} textAnchor="middle" className="fill-gray-600 text-[10px] font-bold">{d.count}</text>
+                <text x={x + barWidth / 2} y={h - 8} textAnchor="middle" className="fill-gray-400 text-[10px]">{d.label}</text>
+              </g>
+            );
+          })}
+        </svg>
+      );
+    };
+
+    const Dashboard = ({ patients, settings }) => {
+      const activePatients = (patients || []).filter(p => !TERMINAL_STATUSES.includes(p.status));
+      const totalCases = activePatients.length;
+      const totalExtraDays = activePatients.reduce((sum, p) => sum + (Number(p.extraDays) || 0), 0);
+      const avgExtraDays = totalCases > 0 ? (totalExtraDays / totalCases).toFixed(1) : 0;
+      const awaitingAgencyCount = activePatients.filter(p => p.status === 'Awaiting Agency').length;
+      const criticalCases = activePatients.filter(p => (Number(p.extraDays) || 0) > (settings?.criticalDays || 30)).length;
+
+      const dischargedToAgencyPatients = useMemo(() => (patients || []).filter(p => p.status === 'Discharged To Agency'), [patients]);
+
+      const icd10Counts = useMemo(() => {
+        const counts = {};
+        activePatients.forEach(p => {
+          if (p.icd10 != null && String(p.icd10).trim() !== '' && String(p.icd10) !== '-') {
+            const code = String(p.icd10).trim().toUpperCase();
+            counts[code] = (counts[code] || 0) + 1;
+          }
+        });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      }, [activePatients]);
+
+      const monthlyTrend = useMemo(() => {
+        const months = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('th-TH', { month: 'short', year: '2-digit' }), count: 0 });
+        }
+        (patients || []).forEach(p => {
+          if (!p.medReadyDate) return;
+          const d = new Date(p.medReadyDate);
+          if (isNaN(d.getTime())) return;
+          const key = `${d.getFullYear()}-${d.getMonth()}`;
+          const m = months.find(mm => mm.key === key);
+          if (m) m.count++;
+        });
+        return months;
+      }, [patients]);
+
+      return (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">ภาพรวมระบบ (Dashboard)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center text-gray-500 mb-2"><Users className="w-5 h-5 mr-2" /><span className="text-sm font-medium">ผู้ป่วย (กำลังดำเนินการ)</span></div>
+              <div className="text-3xl font-bold text-gray-800">{totalCases} <span className="text-sm font-normal text-gray-500">ราย</span></div>
+            </div>
+            <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center text-gray-500 mb-2"><Clock className="w-5 h-5 mr-2" /><span className="text-sm font-medium">วันส่วนเกินเฉลี่ย</span></div>
+              <div className="text-3xl font-bold text-blue-600">{avgExtraDays} <span className="text-sm font-normal text-gray-500">วัน/ราย</span></div>
+            </div>
+            <div className="bg-orange-50 rounded-xl shadow-sm p-5 border border-orange-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center text-orange-600 mb-2"><Building2 className="w-5 h-5 mr-2" /><span className="text-sm font-medium">รอคิวสถานสงเคราะห์</span></div>
+              <div className="text-3xl font-bold text-orange-700">{awaitingAgencyCount} <span className="text-sm font-normal text-orange-600/70">ราย</span></div>
+            </div>
+            <div className="bg-red-50 rounded-xl shadow-sm p-5 border border-red-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center text-red-600 mb-2"><AlertCircle className="w-5 h-5 mr-2" /><span className="text-sm font-medium">เคสวิกฤต (เกิน {settings?.criticalDays || 30} วัน)</span></div>
+              <div className="text-3xl font-bold text-red-700">{criticalCases} <span className="text-sm font-normal text-red-600/70">ราย</span></div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 lg:col-span-2">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">สถานะการดำเนินงาน (Active Pipeline)</h3>
+              <div className="space-y-4">
+                {Object.entries(statusConfig).filter(([k]) => !TERMINAL_STATUSES.includes(k)).map(([statusKey, config]) => {
+                  const count = activePatients.filter(p => p.status === statusKey).length;
+                  const percentage = totalCases > 0 ? (count / totalCases) * 100 : 0;
+                  return (
+                    <div key={statusKey}>
+                      <div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{config.label}</span><span className="text-gray-500">{count} ราย</span></div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden"><div className={`h-full rounded-full transition-all duration-500 ${config.color.split(' ')[0]}`} style={{ width: `${percentage}%` }}></div></div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><Stethoscope className="w-5 h-5 text-emerald-500" /> 5 อันดับโรค (ICD10) ที่พบบ่อย</h3>
+              <div className="space-y-3">
+                {icd10Counts.length > 0 ? (
+                  icd10Counts.map(([code, count], index) => (
+                    <div key={code} className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+                      <div className="flex items-center gap-3">
+                        <span className="text-emerald-700 font-bold text-lg w-5 text-center">{index + 1}.</span>
+                        <span className="font-semibold text-gray-800 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-200">{code}</span>
+                      </div>
+                      <div className="text-sm font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full">{count} ราย</div>
+                    </div>
+                  ))
+                ) : (
+                   <div className="text-center py-6 text-gray-400 text-sm">ยังไม่มีข้อมูลการลงรหัส ICD10</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Building2 className="w-5 h-5 text-cyan-600" /> ติดตามผู้ป่วยที่ฝากหน่วยงานอื่น</h3>
+              <span className="text-sm font-semibold text-cyan-700 bg-cyan-50 px-3 py-1 rounded-full border border-cyan-100">{dischargedToAgencyPatients.length} ราย</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">เคสที่จำหน่ายออกจากโรงพยาบาลแล้ว แต่ยังติดตามจนกว่าจะส่งตัวจริงไปสถานสงเคราะห์สำเร็จ</p>
+            {dischargedToAgencyPatients.length === 0 ? (
+              <div className="text-center py-8 text-gray-400 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-200">ไม่มีเคสที่ฝากหน่วยงานอื่นอยู่ในขณะนี้</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-gray-600">
+                  <thead className="bg-gray-50 text-gray-700 border-b border-gray-200">
+                    <tr>
+                      <th className="px-3 py-2.5 font-semibold">ผู้ป่วย</th>
+                      <th className="px-3 py-2.5 font-semibold">หน่วยงานที่ฝาก</th>
+                      <th className="px-3 py-2.5 font-semibold text-center">ฝากมาแล้ว (วัน)</th>
+                      <th className="px-3 py-2.5 font-semibold">สถานะการส่งตัวจริง</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {dischargedToAgencyPatients.map(p => {
+                      const days = p.dischargeDate && p.dischargeDate !== '-' ? calculateExtraDays(p.dischargeDate) : null;
+                      const finalCfg = dischargeFinalStatusConfig[p.dischargeFinalStatus];
+                      return (
+                        <tr key={p.id} className="hover:bg-cyan-50/30">
+                          <td className="px-3 py-2.5 font-medium text-gray-800">{p.displayName} <span className="text-gray-400 font-normal">({p.caseNo} · HN {p.hnMasked})</span></td>
+                          <td className="px-3 py-2.5">{p.dischargeAgency && p.dischargeAgency !== '-' ? p.dischargeAgency : '-'}</td>
+                          <td className={`px-3 py-2.5 text-center font-bold ${days !== null && days > 30 ? 'text-red-600' : 'text-gray-700'}`}>{days !== null ? days : '-'}</td>
+                          <td className="px-3 py-2.5">{finalCfg ? <span className={`px-2 py-0.5 rounded-full text-xs border font-medium ${finalCfg.color}`}>{finalCfg.label}</span> : <span className="text-gray-400 text-xs italic">ยังไม่ระบุ</span>}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-800 mb-1">แนวโน้มเคสใหม่รายเดือน</h3>
+            <p className="text-xs text-gray-400 mb-4">นับจากวันที่แพทย์ให้กลับ (medReadyDate) ย้อนหลัง 6 เดือน</p>
+            <MiniBarChart data={monthlyTrend} />
+          </div>
+        </div>
+      );
+    };
+
+    // --- ทะเบียนผู้ป่วย (อ่านอย่างเดียว — ไม่มีปุ่มเพิ่ม/แก้ไข/ลบใดๆ ทั้งสิ้น) ---
+    const PatientRegistry = ({ patients, settings }) => {
+      const [searchTerm, setSearchTerm] = useState('');
+      const [filterStatus, setFilterStatus] = useState('All');
+      const [filterYear, setFilterYear] = useState('All');
+
+      const availableYears = useMemo(() => {
+        const years = new Set((patients || []).map(p => getFiscalYear(p.medReadyDate)).filter(Boolean));
+        return Array.from(years).sort().reverse();
+      }, [patients]);
+
+      const sortedPatients = useMemo(() => {
+        return (patients || []).filter(p => {
+          const searchStr = searchTerm.toLowerCase();
+          const matchesSearch = String(p.caseNo || '').toLowerCase().includes(searchStr) ||
+                                String(p.ward || '').toLowerCase().includes(searchStr) ||
+                                String(p.icd10 || '').toLowerCase().includes(searchStr);
+          const matchesStatus = filterStatus === 'All' || p.status === filterStatus;
+          const matchesYear = filterYear === 'All' || getFiscalYear(p.medReadyDate) === filterYear;
+          return matchesSearch && matchesStatus && matchesYear;
+        }).sort((a, b) => (Number(b.extraDays) || 0) - (Number(a.extraDays) || 0));
+      }, [patients, searchTerm, filterStatus, filterYear]);
+
+      return (
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">ทะเบียนผู้ป่วยจำหน่ายยาก <span className="text-sm font-normal text-gray-400">(อ่านอย่างเดียว · ปกปิดข้อมูลระบุตัวตน)</span></h2>
+            <div className="flex flex-wrap gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input type="text" placeholder="ค้นหารหัสเคส, หอผู้ป่วย, ICD10..." className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 shadow-sm transition-shadow" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              </div>
+              <select className="border border-gray-300 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+                <option value="All">ปีงบประมาณ (ทั้งหมด)</option>
+                {availableYears.map(y => <option key={y} value={y}>ปี {y}</option>)}
+              </select>
+              <select className="border border-gray-300 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="All">สถานะ (ทั้งหมด)</option>
+                {Object.entries(statusConfig).map(([key, config]) => <option key={key} value={key}>{config.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* ตาราง: จอกว้าง */}
+          <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 text-gray-700 border-b border-gray-200">
+                <tr>
+                  <th className="px-4 py-4 font-semibold min-w-[150px]">ผู้ป่วย (ปกปิดตัวตน)</th>
+                  <th className="px-4 py-4 font-semibold">โรค (ICD10)</th>
+                  <th className="px-4 py-4 font-semibold">หอผู้ป่วย</th>
+                  <th className="px-4 py-4 font-semibold">วันที่ให้กลับ</th>
+                  <th className="px-4 py-4 font-semibold text-center">ส่วนเกิน(วัน)</th>
+                  <th className="px-4 py-4 font-semibold min-w-[150px]">สาเหตุ / ปลายทาง</th>
+                  <th className="px-4 py-4 font-semibold min-w-[200px]">สถานะหนังสือราชการ</th>
+                  <th className="px-4 py-4 font-semibold">สถานะปัจจุบัน</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sortedPatients.map(patient => (
+                  <tr key={patient.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-gray-900">{patient.displayName}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{patient.caseNo} | HN: {patient.hnMasked}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {patient.icd10 && patient.icd10 !== '-' ? <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 font-medium text-xs"><Stethoscope className="w-3 h-3"/> {patient.icd10}</span> : '-'}
+                    </td>
+                    <td className="px-4 py-3">{patient.ward}</td>
+                    <td className="px-4 py-3 text-gray-500">{patient.medReadyDate}</td>
+                    <td className="px-4 py-3 text-center"><span className={`font-bold text-base ${patient.extraDays >= (settings?.criticalDays || 30) ? 'text-red-600' : patient.extraDays > 14 ? 'text-orange-500' : 'text-gray-700'}`}>{patient.extraDays}</span></td>
+                    <td className="px-4 py-3"><div className="truncate max-w-[150px] font-medium text-gray-800">{patient.reason}</div><div className="text-xs text-blue-600 truncate max-w-[150px] mt-0.5">{patient.agency !== '-' ? patient.agency : ''}</div></td>
+                    <td className="px-4 py-3">
+                      {patient.letterStatus && patient.letterStatus !== '-' ? <div className={`text-xs font-semibold ${patient.letterStatus === 'หน่วยงานตอบรับแล้ว' ? 'text-emerald-600' : patient.letterStatus === 'หน่วยงานปฏิเสธ/เตียงเต็ม' ? 'text-red-500' : patient.letterStatus === 'หน่วยงานติดต่อมาแล้ว' ? 'text-blue-600' : 'text-orange-500'}`}>{patient.letterStatus}</div> : <span className="text-gray-400 text-xs italic">ไม่มีหนังสือ</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={patient.status} />
+                      {patient.status === 'Discharged To Agency' && (
+                        <div className="text-[11px] text-cyan-700 mt-1 space-y-0.5">
+                          {patient.dischargeAgency && patient.dischargeAgency !== '-' && <div className="font-medium truncate max-w-[140px]">ฝาก: {patient.dischargeAgency}</div>}
+                          {patient.dischargeDate && patient.dischargeDate !== '-' && <div>มาแล้ว {calculateExtraDays(patient.dischargeDate)} วัน</div>}
+                          {patient.dischargeFinalStatus && patient.dischargeFinalStatus !== '-' && dischargeFinalStatusConfig[patient.dischargeFinalStatus] && (
+                            <span className={`inline-block px-1.5 py-0.5 rounded border text-[10px] font-medium ${dischargeFinalStatusConfig[patient.dischargeFinalStatus].color}`}>{dischargeFinalStatusConfig[patient.dischargeFinalStatus].label}</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {sortedPatients.length === 0 && <tr><td colSpan="8" className="px-4 py-8 text-center text-gray-400">ไม่พบข้อมูลที่ค้นหา</td></tr>}
+              </tbody>
+            </table>
+          </div>
+
+          {/* การ์ด: จอมือถือ */}
+          <div className="md:hidden space-y-3">
+            {sortedPatients.map(patient => (
+              <div key={patient.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div className="flex justify-between items-start gap-2 mb-3">
+                  <div>
+                    <div className="font-semibold text-gray-900">{patient.displayName}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{patient.caseNo} | HN: {patient.hnMasked}</div>
+                  </div>
+                  <div className="text-right">
+                    <StatusBadge status={patient.status} />
+                    {patient.status === 'Discharged To Agency' && (
+                      <div className="text-[11px] text-cyan-700 mt-1 space-y-0.5">
+                        {patient.dischargeAgency && patient.dischargeAgency !== '-' && <div className="font-medium">ฝาก: {patient.dischargeAgency}</div>}
+                        {patient.dischargeDate && patient.dischargeDate !== '-' && <div>มาแล้ว {calculateExtraDays(patient.dischargeDate)} วัน</div>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-xs text-gray-600 mb-3">
+                  <div>หอผู้ป่วย: <span className="font-medium text-gray-800">{patient.ward || '-'}</span></div>
+                  <div>ICD10: <span className="font-medium text-gray-800">{patient.icd10 && patient.icd10 !== '-' ? patient.icd10 : '-'}</span></div>
+                  <div>วันที่ให้กลับ: <span className="font-medium text-gray-800">{patient.medReadyDate || '-'}</span></div>
+                  <div>ส่วนเกิน: <span className={`font-bold ${patient.extraDays >= (settings?.criticalDays || 30) ? 'text-red-600' : 'text-gray-800'}`}>{patient.extraDays} วัน</span></div>
+                </div>
+                <div className="text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg p-2 border border-gray-100">
+                  <span className="font-medium text-gray-800">{patient.reason}</span>{patient.agency !== '-' ? ` → ${patient.agency}` : ''}
+                </div>
+              </div>
+            ))}
+            {sortedPatients.length === 0 && <div className="text-center py-8 text-gray-400 bg-white rounded-xl border border-gray-200 border-dashed">ไม่พบข้อมูลที่ค้นหา</div>}
+          </div>
+        </div>
+      );
+    };
+
+    // --- ออกรายงาน (Export CSV) — อ่านอย่างเดียว ปลอดภัยสำหรับหน้านี้ ---
+    const ReportsPanel = ({ patients }) => {
+      const [filterYear, setFilterYear] = useState('All');
+      const availableYears = useMemo(() => {
+        const years = new Set((patients || []).map(p => getFiscalYear(p.medReadyDate)).filter(Boolean));
+        return Array.from(years).sort().reverse();
+      }, [patients]);
+      const filteredPatients = useMemo(() => {
+        return filterYear === 'All' ? (patients || []) : (patients || []).filter(p => getFiscalYear(p.medReadyDate) === filterYear);
+      }, [patients, filterYear]);
+
+      const handleExportCSV = () => {
+        const BOM = "﻿";
+        const headers = ['รหัสเคส', 'HN (ปกปิด)', 'ชื่อ (อักษรย่อ)', 'โรค (ICD10)', 'หอผู้ป่วย', 'วันที่แพทย์ให้กลับ', 'ปีงบประมาณ', 'วันส่วนเกิน', 'สาเหตุหลัก', 'ปลายทาง', 'สถานะหนังสือ', 'สถานะเคส', 'หน่วยงานที่ฝาก', 'วันที่ฝากหน่วยงาน', 'จำนวนวันที่ฝาก', 'สถานะการส่งต่อจริง'];
+        const rows = filteredPatients.map(p => {
+          const isAgency = p.status === 'Discharged To Agency';
+          const dischargeDays = isAgency && p.dischargeDate && p.dischargeDate !== '-' ? calculateExtraDays(p.dischargeDate) : '';
+          return [
+            p.caseNo, p.hnMasked, p.displayName, p.icd10, p.ward, p.medReadyDate, getFiscalYear(p.medReadyDate), p.extraDays, p.reason, p.agency, p.letterStatus, statusConfig[p.status]?.label || p.status,
+            isAgency && p.dischargeAgency !== '-' ? p.dischargeAgency : '',
+            isAgency && p.dischargeDate !== '-' ? p.dischargeDate : '',
+            dischargeDays,
+            isAgency ? (dischargeFinalStatusConfig[p.dischargeFinalStatus]?.label || '') : ''
+          ].map(val => `"${val || ''}"`).join(',');
+        });
+        const csvContent = BOM + headers.join(',') + '\n' + rows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `ผู้ป่วยจำหน่ายยาก_รายงาน_${filterYear === 'All' ? 'ทั้งหมด' : 'ปี_'+filterYear}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+      };
+
+      return (
+        <div className="space-y-6 max-w-4xl">
+          <div className="flex justify-between items-center mb-6"><h2 className="text-2xl font-bold text-gray-800">ออกรายงาน (Reports)</h2></div>
+          <div className="bg-white p-10 rounded-xl shadow-sm border border-gray-200 text-center flex flex-col items-center justify-center space-y-5">
+            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border-4 border-emerald-100"><FileSpreadsheet className="w-10 h-10" /></div>
+            <div>
+              <h3 className="font-bold text-xl text-gray-800">ส่งออกข้อมูลเป็นไฟล์ Excel (CSV)</h3>
+              <p className="text-gray-500 text-sm mt-2">ดาวน์โหลดข้อมูลผู้ป่วยตามปีงบประมาณที่คุณต้องการ</p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-6 bg-gray-50 p-4 rounded-xl border border-gray-100 w-full max-w-md">
+              <select className="border border-gray-300 rounded-lg text-sm px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white w-full sm:flex-1 shadow-sm" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
+                <option value="All">ดึงข้อมูลทุกปีงบประมาณ</option>
+                {availableYears.map(y => <option key={y} value={y}>เฉพาะปีงบประมาณ {y}</option>)}
+              </select>
+              <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition w-full sm:w-auto shadow-sm hover:shadow-md">
+                <Download className="w-5 h-5" /> ดาวน์โหลด ({filteredPatients.length} รายการ)
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // --- App: ไม่ต้อง login — ดึงเฉพาะข้อมูลที่ปกปิดตัวตนแล้วจาก action getPublicData (อ่านอย่างเดียว) ---
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [patients, setPatients] = useState([]);
+      const [settings, setSettings] = useState({ criticalDays: 30 });
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState('');
+      const [lastUpdated, setLastUpdated] = useState(null);
+
+      const loadData = async () => {
+        setLoading(true);
+        setError('');
+        try {
+          const res = await apiGet('getPublicData');
+          if (res.success) {
+            setPatients((res.data.patients || []).map(p => ({ ...p, extraDays: calculateExtraDays(p.medReadyDate) })));
+            setSettings(res.data.settings || { criticalDays: 30 });
+            setLastUpdated(new Date());
+          } else {
+            setError(res.message || 'โหลดข้อมูลไม่สำเร็จ');
+          }
+        } catch (err) {
+          console.error(err);
+          setError('เชื่อมต่อ API ไม่สำเร็จ โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => { loadData(); }, []);
+
+      const NavButton = ({ tabId, icon: IconComponent, label }) => (
+        <button onClick={() => setActiveTab(tabId)} className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${activeTab === tabId ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}>
+          <IconComponent className="w-4 h-4 flex-shrink-0" />
+          <span className="whitespace-nowrap">{label}</span>
+        </button>
+      );
+
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-sm p-1.5 flex-shrink-0">
+                  <img src={LOGO_URL} alt="โลโก้กลุ่มงานสังคมสงเคราะห์" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-800 leading-tight flex items-center gap-2">D-Discharge <span className="text-[10px] font-semibold uppercase tracking-wide bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1"><Eye className="w-3 h-3"/> อ่านอย่างเดียว</span></div>
+                  <div className="text-xs text-gray-400">มุมมองภาพรวมสำหรับแพทย์ / ผู้บริหาร · กลุ่มงานสังคมสงเคราะห์</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <nav className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-100">
+                  <NavButton tabId="dashboard" icon={LayoutDashboard} label="แดชบอร์ด" />
+                  <NavButton tabId="patients" icon={Users} label="ทะเบียนผู้ป่วย" />
+                  <NavButton tabId="reports" icon={FileSpreadsheet} label="รายงาน" />
+                </nav>
+                <button onClick={loadData} disabled={loading} className="text-sm font-medium text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg border border-blue-100 disabled:opacity-50">{loading ? 'กำลังโหลด...' : 'รีเฟรช'}</button>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+            {error ? (
+              <div className="bg-white border border-red-200 rounded-xl p-8 text-center">
+                <div className="text-red-600 font-medium mb-4">{error}</div>
+                <button onClick={loadData} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">ลองใหม่</button>
+              </div>
+            ) : loading && patients.length === 0 ? (
+              <div className="py-24 flex flex-col items-center text-gray-500">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                กำลังโหลดข้อมูล...
+              </div>
+            ) : (
+              <>
+                {activeTab === 'dashboard' && <Dashboard patients={patients} settings={settings} />}
+                {activeTab === 'patients' && <PatientRegistry patients={patients} settings={settings} />}
+                {activeTab === 'reports' && <ReportsPanel patients={patients} />}
+                <p className="text-xs text-gray-400 text-center mt-8">ข้อมูลผู้ป่วยแสดงเป็นอักษรย่อและ HN บางส่วนเพื่อความเป็นส่วนตัว{lastUpdated ? ` · อัปเดตล่าสุด ${lastUpdated.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.` : ''}</p>
+              </>
+            )}
+          </main>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ErrorBoundary><App /></ErrorBoundary>);
+  </script>
+</body>
+</html>
