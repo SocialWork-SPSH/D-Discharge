@@ -886,6 +886,7 @@
                           <select value={letterStatus} onChange={e => setLetterStatus(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm">
                             <option value="">-- เลือกสถานะ --</option>
                             <option value="ส่งแล้ว/รอตอบรับ">ส่งแล้ว/รอตอบรับ</option>
+                            <option value="หน่วยงานติดต่อมาแล้ว">หน่วยงานติดต่อมาแล้ว (สอบถาม/ขอข้อมูลเพิ่มเติม/ประสานงาน)</option>
                             <option value="หน่วยงานตอบรับแล้ว">หน่วยงานตอบรับแล้ว</option>
                             <option value="หน่วยงานปฏิเสธ/เตียงเต็ม">หน่วยงานปฏิเสธ/เตียงเต็ม</option>
                           </select>
@@ -1029,7 +1030,7 @@
                         <div className="text-xs space-y-1">
                           <div className="font-medium text-gray-800 flex items-center gap-1"><Mail className="w-3 h-3 text-gray-400"/>{patient.letterNo}</div>
                           <div className="text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded inline-block border border-gray-200">ถึง: {patient.letterAgency || '-'}</div>
-                          <div className={`font-semibold ${patient.letterStatus === 'หน่วยงานตอบรับแล้ว' ? 'text-emerald-600' : patient.letterStatus === 'หน่วยงานปฏิเสธ/เตียงเต็ม' ? 'text-red-500' : 'text-orange-500'}`}>สถานะ: {patient.letterStatus}</div>
+                          <div className={`font-semibold ${patient.letterStatus === 'หน่วยงานตอบรับแล้ว' ? 'text-emerald-600' : patient.letterStatus === 'หน่วยงานปฏิเสธ/เตียงเต็ม' ? 'text-red-500' : patient.letterStatus === 'หน่วยงานติดต่อมาแล้ว' ? 'text-blue-600' : 'text-orange-500'}`}>สถานะ: {patient.letterStatus}</div>
                         </div>
                       ) : <span className="text-gray-400 text-xs italic">ไม่มีหนังสือ</span>}
                     </td>
