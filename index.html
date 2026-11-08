@@ -181,6 +181,7 @@
       'Ready for Transfer': { label: 'ได้คิวแล้ว (รอส่งตัว)', color: 'bg-green-100 text-green-700 border-green-300' },
       'Discharged To Agency': { label: 'จำหน่ายออกจากรพ. ฝากหน่วยงานอื่น', color: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
       'Discharged': { label: 'จำหน่ายสำเร็จ', color: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
+      'Referred Back': { label: 'จำหน่ายสำเร็จ: refer กลับไปรักษาตามสิทธิ์', color: 'bg-lime-100 text-lime-700 border-lime-300' },
       'Self Discharged': { label: 'กลับบ้านเอง', color: 'bg-teal-100 text-teal-700 border-teal-300' },
       'Deceased': { label: 'เสียชีวิต', color: 'bg-slate-200 text-slate-700 border-slate-400' },
     };
@@ -193,7 +194,7 @@
     };
 
     // สถานะที่ถือว่า "ปิดเคส" แล้ว (ไม่นับรวมในสถิติเตียง/เคสที่กำลังดำเนินการของแดชบอร์ด) เหมือนสถานะจำหน่ายสำเร็จ
-    const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency', 'Self Discharged', 'Deceased'];
+    const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency', 'Referred Back', 'Self Discharged', 'Deceased'];
 
     // รายการอ้างอิง ICD10 เบื้องต้นสำหรับผู้ป่วยจำหน่ายยาก (ไม่ครบทุกรหัส เป็นเพียงตัวช่วยกรอกให้สม่ำเสมอ — ยังพิมพ์ค่าอื่นได้อิสระ)
     const ICD10_SUGGESTIONS = [
