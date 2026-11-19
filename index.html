@@ -108,11 +108,19 @@
     // ต้องลงท้ายด้วย /exec เช่น https://script.google.com/macros/s/AKfycb.../exec
     const API_URL = 'https://script.google.com/macros/s/AKfycbz2lijSaB-MEKSvJtR_qIKlx9kyEPjK14M6VB5HdzEhl1NxkZzZ4exuCBMKOpEJyibVXg/exec';
 
+    // กันหน้าค้างที่ "กำลังโหลด..." ตลอดไป: ถ้า API ไม่ตอบใน 30 วินาทีให้ถือว่าเชื่อมต่อไม่สำเร็จ
+    async function fetchWithTimeout(url, options = {}, ms = 30000) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), ms);
+      try { return await fetch(url, { ...options, signal: ctrl.signal }); }
+      finally { clearTimeout(timer); }
+    }
+
     async function apiGet(action, params = {}) {
       const qs = new URLSearchParams({ action, ...params }).toString();
       let res;
       try {
-        res = await fetch(`${API_URL}?${qs}`, { method: 'GET' });
+        res = await fetchWithTimeout(`${API_URL}?${qs}`, { method: 'GET' });
       } catch (err) {
         throw new Error('NETWORK_ERROR');
       }
@@ -130,7 +138,7 @@
     async function apiPost(action, payload = {}) {
       let res;
       try {
-        res = await fetch(API_URL, {
+        res = await fetchWithTimeout(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action, ...payload })
