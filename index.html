@@ -947,6 +947,14 @@
 
     // PatientList
     const PatientList = ({ patients, onDelete, onUpdateStatus, onViewHistory, settings, currentUser }) => {
+      const hnCounts = useMemo(() => {
+        const c = {};
+        (patients || []).forEach(p => { const k = String(p.hn || '').trim(); if (k) c[k] = (c[k] || 0) + 1; });
+        return c;
+      }, [patients]);
+      const ReadmitBadge = ({ hn }) => (hnCounts[String(hn || '').trim()] > 1)
+        ? <span className="ml-2 align-middle text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full" title="HN นี้มีมากกว่า 1 รายการ (แอดมิทซ้ำ)">แอดมิทซ้ำ</span>
+        : null;
       const [searchTerm, setSearchTerm] = useState('');
       const [filterStatus, setFilterStatus] = useState('All');
       const [filterYear, setFilterYear] = useState('All');
@@ -1016,7 +1024,7 @@
                 {sortedPatients.map(patient => (
                   <tr key={patient.id} className="hover:bg-blue-50/50 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-gray-900">{patient.name}</div>
+                      <div className="font-semibold text-gray-900">{patient.name}<ReadmitBadge hn={patient.hn} /></div>
                       <div className="text-xs text-gray-500 mt-0.5">HN: {patient.hn} | AN: {patient.an || '-'}</div>
                     </td>
                     <td className="px-4 py-3">
@@ -1071,7 +1079,7 @@
               <div key={patient.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                 <div className="flex justify-between items-start gap-2 mb-3">
                   <div>
-                    <div className="font-semibold text-gray-900">{patient.name}</div>
+                    <div className="font-semibold text-gray-900">{patient.name}<ReadmitBadge hn={patient.hn} /></div>
                     <div className="text-xs text-gray-500 mt-0.5">HN: {patient.hn} | AN: {patient.an || '-'}</div>
                   </div>
                   <div className="text-right">
