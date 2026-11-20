@@ -189,11 +189,17 @@
 
     const TERMINAL_STATUSES = ['Discharged', 'Discharged To Agency', 'Referred Back', 'Self Discharged', 'Deceased'];
 
-    const calculateExtraDays = (medReadyDateStr) => {
+    const calculateExtraDays = (medReadyDateStr, endDateStr) => {
       if (!medReadyDateStr) return 0;
       const medDate = new Date(medReadyDateStr);
       if (isNaN(medDate.getTime())) return 0;
-      const diffTime = new Date().getTime() - medDate.getTime();
+      // ถ้ามีวันที่สิ้นสุด (ผู้ป่วยออกจาก รพ./ปิดเคสแล้ว) ให้หยุดนับที่วันนั้น ไม่นับต่อถึงวันนี้
+      let end = new Date();
+      if (endDateStr && endDateStr !== '-') {
+        const e = new Date(endDateStr);
+        if (!isNaN(e.getTime())) end = e;
+      }
+      const diffTime = end.getTime() - medDate.getTime();
       if (diffTime <= 0) return 0;
       return Math.floor(diffTime / (1000 * 60 * 60 * 24));
     };
@@ -605,7 +611,7 @@
         try {
           const res = await apiGet('getPublicData');
           if (res.success) {
-            setPatients((res.data.patients || []).map(p => ({ ...p, extraDays: calculateExtraDays(p.medReadyDate) })));
+            setPatients((res.data.patients || []).map(p => ({ ...p, extraDays: calculateExtraDays(p.medReadyDate, TERMINAL_STATUSES.includes(p.status) ? p.closedDate : null) })));
             setSettings(res.data.settings || { criticalDays: 30 });
             setLastUpdated(new Date());
           } else {
