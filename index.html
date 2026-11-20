@@ -221,11 +221,17 @@
       </datalist>
     );
 
-    const calculateExtraDays = (medReadyDateStr) => {
+    const calculateExtraDays = (medReadyDateStr, endDateStr) => {
       if (!medReadyDateStr) return 0;
       const medDate = new Date(medReadyDateStr);
       if (isNaN(medDate.getTime())) return 0;
-      const diffTime = new Date().getTime() - medDate.getTime();
+      // ถ้ามีวันที่สิ้นสุด (ผู้ป่วยออกจาก รพ./ปิดเคสแล้ว) ให้หยุดนับที่วันนั้น ไม่นับต่อถึงวันนี้
+      let end = new Date();
+      if (endDateStr && endDateStr !== '-') {
+        const e = new Date(endDateStr);
+        if (!isNaN(e.getTime())) end = e;
+      }
+      const diffTime = end.getTime() - medDate.getTime();
       if (diffTime <= 0) return 0;
       return Math.floor(diffTime / (1000 * 60 * 60 * 24));
     };
@@ -797,6 +803,7 @@
       const [dischargeAgency, setDischargeAgency] = useState('');
       const [dischargeDate, setDischargeDate] = useState('');
       const [dischargeFinalStatus, setDischargeFinalStatus] = useState('');
+      const [closedDate, setClosedDate] = useState('');
 
       const [isSaving, setIsSaving] = useState(false);
       const [error, setError] = useState('');
@@ -812,6 +819,7 @@
           setDischargeAgency(patient.dischargeAgency && patient.dischargeAgency !== '-' ? patient.dischargeAgency : '');
           setDischargeDate(patient.dischargeDate && patient.dischargeDate !== '-' ? patient.dischargeDate : new Date().toISOString().split('T')[0]);
           setDischargeFinalStatus(patient.dischargeFinalStatus && patient.dischargeFinalStatus !== '-' ? patient.dischargeFinalStatus : '');
+          setClosedDate(patient.closedDate && patient.closedDate !== '-' ? patient.closedDate : new Date().toISOString().split('T')[0]);
           setError('');
         }
       }, [patient]);
@@ -820,7 +828,7 @@
         e.preventDefault();
         setIsSaving(true);
         setError('');
-        const res = await onSave(patient.id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus);
+        const res = await onSave(patient.id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus, closedDate);
         setIsSaving(false);
         if (res && res.success === false) { setError(res.message || 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'); return; }
         setNote('');
@@ -902,6 +910,13 @@
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {TERMINAL_STATUSES.includes(newStatus) && newStatus !== 'Discharged To Agency' && (
+                  <div className="animate-fade-in">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">วันที่ออกจากโรงพยาบาล <span className="text-gray-400 font-normal">(ใช้หยุดนับ "ส่วนเกิน(วัน)")</span></label>
+                    <input type="date" required value={closedDate} onChange={e => setClosedDate(e.target.value)} className="w-full sm:w-1/2 border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" />
                   </div>
                 )}
 
@@ -1442,7 +1457,7 @@
           ]);
 
           if (patientsRes.success) {
-            setPatients((patientsRes.data || []).map(p => ({ ...p, extraDays: calculateExtraDays(p.medReadyDate) })));
+            setPatients((patientsRes.data || []).map(p => ({ ...p, extraDays: calculateExtraDays(p.medReadyDate, TERMINAL_STATUSES.includes(p.status) ? p.closedDate : null) })));
           } else if (!maybeHandleAuthError(patientsRes)) {
             pushToast(patientsRes.message || 'โหลดข้อมูลผู้ป่วยล้มเหลว', 'error');
           }
@@ -1491,9 +1506,9 @@
         }
       };
 
-      const handleUpdatePatientStatus = async (id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus) => {
+      const handleUpdatePatientStatus = async (id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus, closedDate) => {
         try {
-          const res = await apiPost('updatePatientStatus', { patientId: id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus, token });
+          const res = await apiPost('updatePatientStatus', { patientId: id, newStatus, note, letterNo, letterDate, letterAgency, letterStatus, icd10, dischargeAgency, dischargeDate, dischargeFinalStatus, closedDate, token });
           if (res.success) { loadData(); pushToast('อัปเดตสถานะเรียบร้อย', 'success'); }
           else { maybeHandleAuthError(res); }
           return res;
